@@ -6,12 +6,12 @@ from dotenv import load_dotenv
 
 import os
 import requests
-import models
-from schemas import Userbase,UserCreate,UserResponse,UserLogin, Token, Weightcreate, Weightresponse,calorie_response,calorie_intake,habit_create,habit_response,habit_log_response,habit_log_create
-from database import Base,get_db, engine
+import back.models as models
+from back.schemas import Userbase,UserCreate,UserResponse,UserLogin, Token, Weightcreate, Weightresponse,calorie_response,calorie_intake,habit_create,habit_response,habit_log_response,habit_log_create
+from back.database import Base,get_db, engine
 from sqlalchemy.orm import Session
 from  sqlalchemy import select
-from auth import create_access_token, get_currentr_user
+from back.auth import create_access_token, get_currentr_user
 app= FastAPI()
 load_dotenv()
 
