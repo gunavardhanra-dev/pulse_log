@@ -3,6 +3,7 @@ from fastapi import FastAPI,Request,status, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from passlib.context import CryptContext
 from dotenv import load_dotenv
+from fastapi.middleware.cors import CORSMiddleware
 
 import os
 import requests
@@ -14,6 +15,14 @@ from  sqlalchemy import select
 from back.auth import create_access_token, get_currentr_user
 app= FastAPI()
 load_dotenv()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    )
 
 
 models.Base.metadata.create_all(bind=engine)
