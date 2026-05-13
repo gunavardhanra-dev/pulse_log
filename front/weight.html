@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PulseLog — Weight History</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #020202;
+  --surface: #0c0c0c;
+  --surface2: #111111;
+  --border: rgba(255,255,255,0.05);
+  --border-red: rgba(180,0,0,0.25);
+  --text: #e8e0d8;
+  --muted: #4a4540;
+  --muted2: #6a6560;
+  --accent: #c0000a;
+  --accent-bright: #e8000d;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Cinzel', serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
+
+#starfield { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+.app {
+  position: relative; z-index: 1;
+  max-width: 480px; margin: 0 auto;
+  min-height: 100vh; padding-bottom: 2rem;
+}
+
+/* top bar */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.2rem 1.25rem 0.8rem;
+  position: sticky; top: 0; z-index: 10;
+  background: linear-gradient(to bottom, #020202 80%, transparent);
+}
+
+.back-btn {
+  width: 34px; height: 34px;
+  background: var(--surface);
+  border: 1px solid var(--border-red);
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; text-decoration: none;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.back-btn:hover { background: var(--surface2); }
+.back-btn svg {
+  width: 16px; height: 16px;
+  stroke: var(--accent); fill: none;
+  stroke-width: 2; stroke-linecap: round;
+}
+
+.topbar-title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+/* filter tabs */
+.filter-tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.tab {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 0.5rem;
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted2);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+/* stats row */
+.stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.5rem;
+  padding: 0 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border-red);
+  border-radius: 4px;
+  padding: 0.875rem 0.75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0.5;
+}
+
+.stat-label {
+  font-size: 8px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted2);
+  margin-bottom: 6px;
+}
+
+.stat-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1;
+}
+
+.stat-val span {
+  font-size: 11px;
+  color: var(--muted2);
+}
+
+.stat-delta {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  margin-top: 4px;
+}
+
+.stat-delta.down { color: #22c55e; }
+.stat-delta.up { color: var(--accent); }
+
+/* graph card */
+.graph-card {
+  margin: 0 1.25rem 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border-red);
+  border-radius: 4px;
+  padding: 1.25rem 1rem 0.75rem;
+  position: relative;
+  overflow: hidden;
+  animation: fadeUp 0.4s ease both;
+}
+
+.graph-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+canvas#mainChart {
+  width: 100%;
+  height: 160px;
+  display: block;
+}
+
+.chart-dates {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.4rem 0 0;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+}
+
+/* history list */
+.section-label {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted2);
+  padding: 0 1.25rem;
+  margin-bottom: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-label::after {
+  content: ''; flex: 1;
+  height: 1px; background: var(--border);
+}
+
+.history-list {
+  padding: 0 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  animation: fadeUp 0.3s ease both;
+}
+
+.history-item:nth-child(1) { animation-delay: 0.05s; }
+.history-item:nth-child(2) { animation-delay: 0.08s; }
+.history-item:nth-child(3) { animation-delay: 0.11s; }
+
+.history-date {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--muted2);
+}
+
+.history-weight {
+  font-family: 'DM Mono', monospace;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.history-weight span {
+  font-size: 11px;
+  color: var(--muted2);
+}
+
+.history-delta {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  min-width: 60px;
+  text-align: right;
+}
+
+.history-delta.down { color: #22c55e; }
+.history-delta.up { color: var(--accent); }
+.history-delta.same { color: var(--muted); }
+
+.no-data {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  padding: 2rem;
+}
+</style>
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+
+<div class="app">
+  <div class="topbar">
+    <a href="index.html" class="back-btn">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </a>
+    <span class="topbar-title">Weight History</span>
+  </div>
+
+  <!-- filter tabs -->
+  <div class="filter-tabs">
+    <div class="tab active" onclick="setFilter('week', this)">Week</div>
+    <div class="tab" onclick="setFilter('month', this)">Month</div>
+    <div class="tab" onclick="setFilter('all', this)">All</div>
+  </div>
+
+  <!-- stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Current</div>
+      <div class="stat-val" id="stat-current">—<span>kg</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Lowest</div>
+      <div class="stat-val" id="stat-low">—<span>kg</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Change</div>
+      <div class="stat-val stat-delta" id="stat-change">—</div>
+    </div>
+  </div>
+
+  <!-- graph -->
+  <div class="graph-card">
+    <canvas id="mainChart"></canvas>
+    <div class="chart-dates" id="chart-dates"></div>
+  </div>
+
+  <!-- history list -->
+  <div class="section-label">Log</div>
+  <div class="history-list" id="history-list">
+    <div class="no-data">Loading...</div>
+  </div>
+</div>
+
+<script>
+const API = "https://pulse-log.onrender.com";
+const token = localStorage.getItem('token');
+if (!token) window.location.href = 'login.html';
+const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+
+// starfield
+const canvas = document.getElementById('starfield');
+const ctx = canvas.getContext('2d');
+function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+resize(); window.addEventListener('resize', resize);
+const stars = Array.from({length: 80}, () => ({
+  x: Math.random()*window.innerWidth, y: Math.random()*window.innerHeight,
+  r: Math.random()*1.1+0.2, speed: Math.random()*0.1+0.02,
+  opacity: Math.random()*0.25+0.06, tw: Math.random()*0.01+0.004,
+  to: Math.random()*Math.PI*2,
+}));
+let t = 0;
+(function draw() {
+  ctx.clearRect(0,0,canvas.width,canvas.height); t++;
+  for (const s of stars) {
+    s.y -= s.speed;
+    if (s.y < -2) { s.y = canvas.height+2; s.x = Math.random()*canvas.width; }
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(180,160,150,${s.opacity*(0.6+0.4*Math.sin(t*s.tw+s.to))})`; ctx.fill();
+  }
+  requestAnimationFrame(draw);
+})();
+
+let allWeights = [];
+let currentFilter = 'week';
+
+async function loadWeights() {
+  try {
+    const res = await fetch(`${API}/weight`, { headers });
+    if (res.status === 401) { localStorage.removeItem('token'); window.location.href = 'login.html'; return; }
+    allWeights = await res.json();
+    allWeights.sort((a, b) => new Date(a.logged_at) - new Date(b.logged_at));
+    render();
+  } catch(e) {
+    document.getElementById('history-list').innerHTML = '<div class="no-data">Failed to load data.</div>';
+  }
+}
+
+function filterWeights(filter) {
+  const now = new Date();
+  if (filter === 'week') {
+    const cutoff = new Date(now - 7 * 24 * 60 * 60 * 1000);
+    return allWeights.filter(w => new Date(w.logged_at) >= cutoff);
+  } else if (filter === 'month') {
+    const cutoff = new Date(now - 30 * 24 * 60 * 60 * 1000);
+    return allWeights.filter(w => new Date(w.logged_at) >= cutoff);
+  }
+  return allWeights;
+}
+
+function setFilter(filter, el) {
+  currentFilter = filter;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+function render() {
+  const weights = filterWeights(currentFilter);
+  renderStats(weights);
+  renderChart(weights);
+  renderList(weights);
+}
+
+function renderStats(weights) {
+  if (!weights.length) return;
+  const vals = weights.map(w => w.weight);
+  const current = vals[vals.length - 1];
+  const lowest = Math.min(...vals);
+  const change = current - vals[0];
+
+  document.getElementById('stat-current').innerHTML = `${current}<span>kg</span>`;
+  document.getElementById('stat-low').innerHTML = `${lowest}<span>kg</span>`;
+
+  const changeEl = document.getElementById('stat-change');
+  changeEl.textContent = (change > 0 ? '+' : '') + change.toFixed(1) + 'kg';
+  changeEl.className = 'stat-val stat-delta ' + (change > 0 ? 'up' : change < 0 ? 'down' : 'same');
+}
+
+function renderChart(weights) {
+  if (!weights.length) return;
+  const c = document.getElementById('mainChart');
+  const cCtx = c.getContext('2d');
+  c.width = c.offsetWidth * window.devicePixelRatio;
+  c.height = 160 * window.devicePixelRatio;
+  cCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  const W = c.offsetWidth, H = 160;
+
+  const vals = weights.map(w => w.weight);
+  const min = Math.min(...vals) - 1;
+  const max = Math.max(...vals) + 1;
+  const xStep = W / (weights.length - 1 || 1);
+
+  const pts = vals.map((v, i) => ({
+    x: i * xStep,
+    y: H - ((v - min) / (max - min || 1)) * (H - 24) - 12
+  }));
+
+  // gradient fill
+  const grad = cCtx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, 'rgba(192,0,10,0.25)');
+  grad.addColorStop(1, 'rgba(192,0,10,0)');
+
+  cCtx.beginPath();
+  cCtx.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < pts.length; i++) {
+    const mx = (pts[i-1].x + pts[i].x) / 2;
+    cCtx.bezierCurveTo(mx, pts[i-1].y, mx, pts[i].y, pts[i].x, pts[i].y);
+  }
+  cCtx.lineTo(pts[pts.length-1].x, H);
+  cCtx.lineTo(pts[0].x, H);
+  cCtx.closePath();
+  cCtx.fillStyle = grad; cCtx.fill();
+
+  // line
+  cCtx.beginPath();
+  cCtx.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < pts.length; i++) {
+    const mx = (pts[i-1].x + pts[i].x) / 2;
+    cCtx.bezierCurveTo(mx, pts[i-1].y, mx, pts[i].y, pts[i].x, pts[i].y);
+  }
+  cCtx.strokeStyle = '#c0000a'; cCtx.lineWidth = 2; cCtx.stroke();
+
+  // dots
+  for (const p of pts) {
+    cCtx.beginPath(); cCtx.arc(p.x, p.y, 3, 0, Math.PI*2);
+    cCtx.fillStyle = '#c0000a'; cCtx.fill();
+    cCtx.beginPath(); cCtx.arc(p.x, p.y, 1.5, 0, Math.PI*2);
+    cCtx.fillStyle = '#e8e0d8'; cCtx.fill();
+  }
+
+  // y axis labels
+  cCtx.font = `${9 * window.devicePixelRatio}px DM Mono`;
+  cCtx.fillStyle = 'rgba(106,101,96,0.8)';
+  cCtx.textAlign = 'left';
+  const steps = 3;
+  for (let i = 0; i <= steps; i++) {
+    const val = min + (max - min) * (i / steps);
+    const y = H - ((val - min) / (max - min || 1)) * (H - 24) - 12;
+    cCtx.fillText(val.toFixed(1), 4, y - 4);
+  }
+
+  // dates
+  const show = Math.min(weights.length, 5);
+  const step = Math.floor(weights.length / (show - 1 || 1));
+  const datesEl = document.getElementById('chart-dates');
+  datesEl.innerHTML = '';
+  for (let i = 0; i < weights.length; i += step || 1) {
+    const d = new Date(weights[i].logged_at);
+    const span = document.createElement('span');
+    span.textContent = `${d.getDate()}/${d.getMonth()+1}`;
+    datesEl.appendChild(span);
+    if (datesEl.children.length >= show) break;
+  }
+}
+
+function renderList(weights) {
+  const el = document.getElementById('history-list');
+  if (!weights.length) {
+    el.innerHTML = '<div class="no-data">No weight logs in this period.</div>';
+    return;
+  }
+
+  // show newest first
+  const reversed = weights.slice().reverse();
+  el.innerHTML = reversed.map((w, i) => {
+    const prev = reversed[i + 1];
+    const diff = prev ? w.weight - prev.weight : null;
+    const d = new Date(w.logged_at);
+    const dateStr = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' });
+    const timeStr = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+
+    let deltaHtml = '';
+    if (diff !== null) {
+      const cls = diff > 0 ? 'up' : diff < 0 ? 'down' : 'same';
+      const sign = diff > 0 ? '+' : '';
+      deltaHtml = `<div class="history-delta ${cls}">${sign}${diff.toFixed(1)} kg</div>`;
+    } else {
+      deltaHtml = `<div class="history-delta same">—</div>`;
+    }
+
+    return `
+      <div class="history-item">
+        <div class="history-date">${dateStr}<br><span style="font-size:9px;color:var(--muted)">${timeStr}</span></div>
+        <div class="history-weight">${w.weight}<span>kg</span></div>
+        ${deltaHtml}
+      </div>
+    `;
+  }).join('');
+}
+
+loadWeights();
+</script>
+</body>
+</html>

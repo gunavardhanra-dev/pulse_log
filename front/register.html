@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PulseLog — Register</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #020202;
+  --surface: #0c0c0c;
+  --border: rgba(255,255,255,0.06);
+  --border-red: rgba(180,0,0,0.2);
+  --text: #e8e0d8;
+  --muted: #5a5550;
+  --muted2: #6a6560;
+  --accent: #c0000a;
+  --accent-bright: #e8000d;
+  --input-bg: #070707;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Cinzel', serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+#starfield {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.page {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.25rem;
+}
+
+.card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--surface);
+  border: 1px solid var(--border-red);
+  border-radius: 4px;
+  padding: 2.5rem 2rem;
+  animation: fadeUp 0.5s ease both;
+  position: relative;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 2rem;
+}
+
+.logo-icon {
+  width: 36px; height: 36px;
+  background: var(--accent);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-icon svg {
+  width: 20px; height: 20px;
+  stroke: white; fill: none;
+  stroke-width: 2; stroke-linecap: round;
+}
+
+.logo-name {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+h1 {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.4rem;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: var(--muted2);
+  margin-bottom: 2rem;
+  letter-spacing: 0.05em;
+}
+
+/* step indicator */
+.steps {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 1.75rem;
+}
+
+.step-dot {
+  height: 3px;
+  flex: 1;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  transition: background 0.3s;
+}
+
+.step-dot.active { background: var(--accent); }
+.step-dot.done { background: rgba(180,0,0,0.4); }
+
+.step-label {
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted2);
+  margin-bottom: 1.25rem;
+}
+
+/* fields */
+.field { margin-bottom: 1rem; }
+
+label {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted2);
+  margin-bottom: 6px;
+}
+
+.input-wrap { position: relative; }
+
+input {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 2px;
+  padding: 0.75rem 1rem;
+  font-size: 14px;
+  font-family: 'DM Mono', monospace;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  -webkit-appearance: none;
+  letter-spacing: 0.03em;
+}
+
+input::placeholder { color: #2a2520; }
+input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(180,0,0,0.12);
+}
+
+.row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.toggle-pw {
+  position: absolute;
+  right: 12px; top: 50%;
+  transform: translateY(-50%);
+  background: none; border: none;
+  cursor: pointer; color: var(--muted);
+  padding: 4px; display: flex;
+  align-items: center; transition: color 0.2s;
+}
+.toggle-pw:hover { color: var(--text); }
+.toggle-pw svg {
+  width: 18px; height: 18px;
+  stroke: currentColor; fill: none;
+  stroke-width: 1.8; stroke-linecap: round;
+}
+
+.btn-primary {
+  width: 100%;
+  background: var(--accent);
+  color: var(--text);
+  border: none; border-radius: 2px;
+  padding: 0.85rem;
+  font-size: 11px; font-weight: 600;
+  font-family: 'Cinzel', serif;
+  cursor: pointer; margin-top: 1.25rem;
+  transition: background 0.2s, transform 0.1s;
+  letter-spacing: 0.15em; text-transform: uppercase;
+}
+.btn-primary:hover { background: var(--accent-bright); }
+.btn-primary:active { transform: scale(0.98); }
+.btn-primary:disabled { opacity: 0.5; pointer-events: none; }
+
+.btn-secondary {
+  width: 100%;
+  background: transparent;
+  color: var(--muted2);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 2px;
+  padding: 0.75rem;
+  font-size: 11px; font-weight: 500;
+  font-family: 'Cinzel', serif;
+  cursor: pointer; margin-top: 0.5rem;
+  transition: border-color 0.2s, color 0.2s;
+  letter-spacing: 0.12em; text-transform: uppercase;
+}
+.btn-secondary:hover { border-color: var(--border-red); color: var(--text); }
+
+.error-msg {
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.25);
+  border-radius: 2px;
+  color: #fca5a5;
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  padding: 0.6rem 0.875rem;
+  margin-top: 0.75rem;
+  display: none;
+}
+.error-msg.show { display: block; }
+
+.footer-text {
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted2);
+  margin-top: 1.5rem;
+}
+.footer-text a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+.footer-text a:hover { color: var(--accent-bright); }
+
+.hint {
+  font-size: 10px;
+  font-family: 'DM Mono', monospace;
+  color: var(--muted);
+  margin-top: 4px;
+  letter-spacing: 0.03em;
+}
+
+/* step panels */
+.step-panel { display: none; }
+.step-panel.active { display: block; }
+
+.statusbar {
+  display: flex;
+  justify-content: space-between;
+  width: 100%; max-width: 400px;
+  padding: 0 4px; margin-bottom: 1rem;
+  font-size: 13px;
+  font-family: 'DM Mono', monospace;
+  color: var(--muted);
+}
+</style>
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+
+<div class="page">
+  <div class="statusbar">
+    <span id="clock">9:41</span>
+  </div>
+
+  <div class="card">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <span class="logo-name">PulseLog</span>
+    </div>
+
+    <h1>Create account</h1>
+    <p class="subtitle">Your health journey starts here.</p>
+
+    <!-- step dots -->
+    <div class="steps">
+      <div class="step-dot active" id="dot-1"></div>
+      <div class="step-dot" id="dot-2"></div>
+      <div class="step-dot" id="dot-3"></div>
+    </div>
+
+    <!-- STEP 1: account -->
+    <div class="step-panel active" id="step-1">
+      <div class="step-label">Step 1 — Account</div>
+
+      <div class="field">
+        <label>Username</label>
+        <input type="text" id="username" placeholder="e.g. mahathii"/>
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="email" placeholder="hello@example.com"/>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <div class="input-wrap">
+          <input type="password" id="password" placeholder="min. 8 characters"/>
+          <button class="toggle-pw" id="toggle-pw" type="button">
+            <svg id="eye-icon" viewBox="0 0 24 24">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="error-msg" id="err-1"></div>
+      <button class="btn-primary" onclick="nextStep(1)">Continue</button>
+    </div>
+
+    <!-- STEP 2: body stats -->
+    <div class="step-panel" id="step-2">
+      <div class="step-label">Step 2 — Body Stats</div>
+
+      <div class="row-2">
+        <div class="field">
+          <label>Age</label>
+          <input type="number" id="age" placeholder="e.g. 20"/>
+        </div>
+        <div class="field">
+          <label>Height (cm)</label>
+          <input type="number" id="height" placeholder="e.g. 174"/>
+        </div>
+      </div>
+      <div class="row-2">
+        <div class="field">
+          <label>Weight (kg)</label>
+          <input type="number" id="weight" placeholder="e.g. 70" step="0.1"/>
+        </div>
+        <div class="field">
+          <label>Target (kg)</label>
+          <input type="number" id="target_weight" placeholder="e.g. 65" step="0.1"/>
+        </div>
+      </div>
+      <p class="hint">Height in centimetres — e.g. 174 not 1.74</p>
+
+      <div class="error-msg" id="err-2"></div>
+      <button class="btn-primary" onclick="nextStep(2)">Continue</button>
+      <button class="btn-secondary" onclick="prevStep(2)">Back</button>
+    </div>
+
+    <!-- STEP 3: confirm -->
+    <div class="step-panel" id="step-3">
+      <div class="step-label">Step 3 — Confirm</div>
+
+      <div id="summary" style="
+        background: var(--input-bg);
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 2px;
+        padding: 1rem;
+        font-family: 'DM Mono', monospace;
+        font-size: 12px;
+        line-height: 2;
+        color: var(--muted2);
+      "></div>
+
+      <div class="error-msg" id="err-3"></div>
+      <button class="btn-primary" id="submit-btn" onclick="submitRegister()">Create Account</button>
+      <button class="btn-secondary" onclick="prevStep(3)">Back</button>
+    </div>
+
+    <p class="footer-text">Already have an account? <a href="login.html">Log in</a></p>
+  </div>
+</div>
+
+<script>
+const API = "https://pulse-log.onrender.com";
+
+// clock
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.getHours().toString().padStart(2,'0') + ':' +
+    now.getMinutes().toString().padStart(2,'0');
+}
+updateClock();
+setInterval(updateClock, 30000);
+
+// starfield
+const canvas = document.getElementById('starfield');
+const ctx = canvas.getContext('2d');
+function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+resize();
+window.addEventListener('resize', resize);
+const stars = Array.from({length: 100}, () => ({
+  x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight,
+  r: Math.random() * 1.1 + 0.2, speed: Math.random() * 0.12 + 0.03,
+  opacity: Math.random() * 0.3 + 0.08, tw: Math.random() * 0.01 + 0.004,
+  to: Math.random() * Math.PI * 2,
+}));
+const pulses = Array.from({length: 10}, () => ({
+  x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight,
+  r: Math.random() * 1.4 + 0.6, speed: Math.random() * 0.18 + 0.05,
+  opacity: Math.random() * 0.25 + 0.06, tw: Math.random() * 0.015 + 0.005,
+  to: Math.random() * Math.PI * 2,
+}));
+let t = 0;
+(function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height); t++;
+  for (const s of stars) {
+    s.y -= s.speed;
+    if (s.y < -2) { s.y = canvas.height + 2; s.x = Math.random() * canvas.width; }
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(180,160,150,${s.opacity * (0.6 + 0.4 * Math.sin(t * s.tw + s.to))})`; ctx.fill();
+  }
+  for (const p of pulses) {
+    p.y -= p.speed;
+    if (p.y < -2) { p.y = canvas.height + 2; p.x = Math.random() * canvas.width; }
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(180,0,10,${p.opacity * (0.5 + 0.5 * Math.sin(t * p.tw + p.to))})`; ctx.fill();
+  }
+  requestAnimationFrame(draw);
+})();
+
+// password toggle
+const pwInput = document.getElementById('password');
+document.getElementById('toggle-pw').addEventListener('click', () => {
+  const hidden = pwInput.type === 'password';
+  pwInput.type = hidden ? 'text' : 'password';
+  document.getElementById('eye-icon').innerHTML = hidden
+    ? `<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>`
+    : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+});
+
+// step navigation
+let currentStep = 1;
+
+function showStep(n) {
+  for (let i = 1; i <= 3; i++) {
+    document.getElementById(`step-${i}`).classList.toggle('active', i === n);
+    const dot = document.getElementById(`dot-${i}`);
+    dot.classList.remove('active', 'done');
+    if (i === n) dot.classList.add('active');
+    else if (i < n) dot.classList.add('done');
+  }
+  currentStep = n;
+}
+
+function nextStep(from) {
+  const err = document.getElementById(`err-${from}`);
+  err.classList.remove('show');
+
+  if (from === 1) {
+    const username = document.getElementById('username').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    if (!username || !email || !password) {
+      err.textContent = 'Please fill in all fields.'; err.classList.add('show'); return;
+    }
+    if (password.length < 8) {
+      err.textContent = 'Password must be at least 8 characters.'; err.classList.add('show'); return;
+    }
+  }
+
+  if (from === 2) {
+    const age = document.getElementById('age').value;
+    const height = document.getElementById('height').value;
+    const weight = document.getElementById('weight').value;
+    const target = document.getElementById('target_weight').value;
+    if (!age || !height || !weight || !target) {
+      err.textContent = 'Please fill in all fields.'; err.classList.add('show'); return;
+    }
+    if (parseFloat(height) < 50 || parseFloat(height) > 250) {
+      err.textContent = 'Enter height in centimetres (e.g. 174).'; err.classList.add('show'); return;
+    }
+
+    // build summary
+    document.getElementById('summary').innerHTML = `
+      <span style="color:var(--muted)">Username</span>   ${document.getElementById('username').value}<br>
+      <span style="color:var(--muted)">Email</span>      ${document.getElementById('email').value}<br>
+      <span style="color:var(--muted)">Age</span>        ${age} yrs<br>
+      <span style="color:var(--muted)">Height</span>     ${height} cm<br>
+      <span style="color:var(--muted)">Weight</span>     ${weight} kg<br>
+      <span style="color:var(--muted)">Target</span>     ${target} kg
+    `;
+  }
+
+  showStep(from + 1);
+}
+
+function prevStep(from) {
+  showStep(from - 1);
+}
+
+// submit
+async function submitRegister() {
+  const btn = document.getElementById('submit-btn');
+  const err = document.getElementById('err-3');
+  err.classList.remove('show');
+  btn.textContent = 'Creating...';
+  btn.disabled = true;
+
+  const payload = {
+    username: document.getElementById('username').value.trim(),
+    email: document.getElementById('email').value.trim(),
+    password: document.getElementById('password').value,
+    age: parseInt(document.getElementById('age').value),
+    height: parseFloat(document.getElementById('height').value),
+    weight: parseFloat(document.getElementById('weight').value),
+    target_weight: parseFloat(document.getElementById('target_weight').value),
+  };
+
+  try {
+    const res = await fetch(`${API}/registration`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Registration failed');
+
+    // auto login after register
+    const loginRes = await fetch(`${API}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: payload.email, password: payload.password })
+    });
+    const loginData = await loginRes.json();
+    if (!loginRes.ok) throw new Error('Account created! Please log in.');
+
+    localStorage.setItem('token', loginData.access_token);
+    window.location.href = 'index.html';
+
+  } catch (e) {
+    err.textContent = e.message;
+    err.classList.add('show');
+    btn.textContent = 'Create Account';
+    btn.disabled = false;
+  }
+}
+
+// enter key
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (currentStep === 1) nextStep(1);
+  else if (currentStep === 2) nextStep(2);
+  else if (currentStep === 3) submitRegister();
+});
+</script>
+</body>
+</html>

@@ -55,6 +55,7 @@ html, body {
   padding-bottom: 90px;
 }
 
+/* ── top bar ── */
 .topbar {
   display: flex;
   justify-content: space-between;
@@ -591,7 +592,7 @@ canvas#weightChart {
   <!-- weight section -->
   <div class="section">
     <div class="section-label">Weight</div>
-    <div class="card">
+    <div class="card" onclick="window.location.href='weight.html'" style="cursor:pointer">
       <div class="bmi-row">
         <span class="bmi-val">BMI <span id="bmi-val">—</span></span>
         <span class="bmi-badge" id="bmi-cat">—</span>
