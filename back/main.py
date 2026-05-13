@@ -178,13 +178,9 @@ def habit_getting(db:Annotated[Session,Depends(get_db)],current_user= Depends(ge
     habits= result.scalars().all()
     return habits
 @app.get("/bmi")
-def get_bmi(current_user = Depends(get_currentr_user)):
-    bmi = current_user.weight / (current_user.height ** 2)
-    return {
-    "bmi": round(bmi, 2),
-    "weight": current_user.weight,
-    "height": current_user.height,
-    "category": "Normal" if 18.5 <= bmi <= 24.9 else "Underweight" if bmi < 18.5 else "Overweight"
-}
-
+def get_bmi(current_user=Depends(get_currentr_user)):
+    height_m = current_user.height / 100 
+    bmi = current_user.weight / (height_m ** 2)
+    category = "Underweight" if bmi < 18.5 else "Normal" if bmi <= 24.9 else "Overweight"
+    return {"bmi": round(bmi, 2), "category": category}
 
