@@ -3,6 +3,7 @@ from fastapi import FastAPI,Request,status, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from passlib.context import CryptContext
 from dotenv import load_dotenv
+from typing import List
 from fastapi.middleware.cors import CORSMiddleware
 
 import os
@@ -139,7 +140,7 @@ def calories_intake(food:calorie_intake ,db:Annotated[Session, Depends(get_db)],
     db.commit()
     db.refresh(log_user)
     return log_user
-@app.get("/calorielog",response_model=calorie_response)
+@app.get("/calorielog",response_model=List[calorie_response])
 def get_calorie(db:Annotated[Session,Depends(get_db)],current_user=Depends(get_currentr_user)):
     result = db.execute(
         select(models.meal_log).where(models.meal_log.user_id==current_user.id)
@@ -169,7 +170,7 @@ def habit_logging(users:habit_log_create,db:Annotated[Session,Depends(get_db)],c
     db.commit()
     db.refresh(new_log)
     return new_log
-@app.get("/habit/log", response_model=list[habit_log_response])
+@app.get("/habit/log", response_model=List[habit_log_response])
 def habit_getting(db:Annotated[Session,Depends(get_db)],current_user= Depends(get_currentr_user)):
     result=db.execute(
         select(models.habit_log).where(models.habit_log.user_id==current_user.id)
