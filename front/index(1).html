@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PulseLog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0a0a0a;
+  --surface: #161616;
+  --surface2: #1e1e1e;
+  --surface3: #252525;
+  --border: rgba(255,255,255,0.07);
+  --text: #f2f2f2;
+  --muted: #888;
+  --muted2: #555;
+  --accent: #e0000a;
+  --accent-dim: rgba(224,0,10,0.1);
+  --green: #30d158;
+  --radius: 16px;
+  --radius-sm: 12px;
+}
+
+html, body {
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar { width: 0; }
+
+.app {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding-bottom: 100px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.25rem 0.75rem;
+  position: sticky;
+  top: 0; z-index: 10;
+  background: var(--bg);
+}
+
+.topbar-left { display: flex; flex-direction: column; gap: 1px; }
+
+.greeting { font-size: 12px; font-weight: 400; color: var(--muted); }
+
+.username {
+  font-size: 22px; font-weight: 700;
+  color: var(--text); letter-spacing: -0.02em;
+}
+
+.profile-btn {
+  width: 38px; height: 38px;
+  background: var(--surface2);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  text-decoration: none; transition: background 0.15s;
+}
+.profile-btn:hover { background: var(--surface3); }
+.profile-btn svg {
+  width: 18px; height: 18px;
+  stroke: var(--text); fill: none;
+  stroke-width: 1.8; stroke-linecap: round;
+}
+
+.section {
+  padding: 0 1.25rem;
+  margin-bottom: 1rem;
+  animation: fadeUp 0.4s ease both;
+}
+.section:nth-child(2) { animation-delay: 0.04s; }
+.section:nth-child(3) { animation-delay: 0.08s; }
+.section:nth-child(4) { animation-delay: 0.12s; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.section-header {
+  display: flex; justify-content: space-between;
+  align-items: center; margin-bottom: 0.5rem;
+}
+
+.section-title {
+  font-size: 13px; font-weight: 600;
+  color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em;
+}
+
+.section-link {
+  font-size: 13px; font-weight: 500;
+  color: var(--accent); text-decoration: none;
+}
+
+/* weight card */
+.weight-card {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 1.125rem 1.25rem 0.875rem;
+  cursor: pointer; transition: background 0.15s;
+  text-decoration: none; display: block;
+}
+.weight-card:hover { background: var(--surface2); }
+
+.weight-top {
+  display: flex; justify-content: space-between;
+  align-items: flex-start; margin-bottom: 0.75rem;
+}
+
+.weight-main { display: flex; flex-direction: column; gap: 3px; }
+.weight-label { font-size: 12px; font-weight: 500; color: var(--muted); }
+
+.weight-val {
+  font-size: 36px; font-weight: 700;
+  letter-spacing: -0.03em; color: var(--text); line-height: 1;
+}
+.weight-val span { font-size: 16px; font-weight: 500; color: var(--muted); margin-left: 2px; }
+
+.weight-delta { font-size: 13px; font-weight: 500; }
+.weight-delta.down { color: var(--green); }
+.weight-delta.up { color: var(--accent); }
+
+.weight-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+
+.bmi-pill {
+  font-size: 12px; font-weight: 600;
+  padding: 4px 10px; border-radius: 20px;
+}
+.bmi-pill.normal { background: rgba(48,209,88,0.15); color: var(--green); }
+.bmi-pill.underweight { background: rgba(255,159,10,0.15); color: #ff9f0a; }
+.bmi-pill.overweight { background: var(--accent-dim); color: var(--accent); }
+
+.bmi-num { font-size: 12px; color: var(--muted); }
+
+canvas#weightChart { width: 100%; height: 80px; display: block; margin-top: 0.25rem; }
+
+.chart-dates {
+  display: flex; justify-content: space-between;
+  padding: 0.3rem 0 0; font-size: 10px; color: var(--muted2);
+}
+
+/* calorie card */
+.calorie-card {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 1.125rem 1.25rem;
+}
+
+.calorie-top {
+  display: flex; justify-content: space-between;
+  align-items: center; margin-bottom: 0.875rem;
+}
+
+.calorie-label { font-size: 12px; font-weight: 500; color: var(--muted); }
+
+.calorie-nums { display: flex; align-items: baseline; gap: 3px; }
+
+.calorie-consumed {
+  font-size: 28px; font-weight: 700;
+  letter-spacing: -0.02em; color: var(--text);
+}
+
+.calorie-goal { font-size: 14px; color: var(--muted); }
+
+.progress-bar-wrap {
+  width: 100%; height: 5px;
+  background: var(--surface3); border-radius: 3px;
+  overflow: hidden; margin-bottom: 1rem;
+}
+
+.progress-bar {
+  height: 100%; border-radius: 3px;
+  background: var(--accent);
+  transition: width 1s cubic-bezier(0.4,0,0.2,1); width: 0%;
+}
+
+.macros { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; }
+
+.macro-item {
+  background: var(--surface2); border-radius: var(--radius-sm);
+  padding: 0.625rem 0.75rem;
+}
+
+.macro-val {
+  font-size: 17px; font-weight: 700;
+  letter-spacing: -0.02em; color: var(--text); margin-bottom: 2px;
+}
+.macro-val span { font-size: 11px; font-weight: 400; color: var(--muted); }
+
+.macro-name { font-size: 11px; color: var(--muted); }
+.macro-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  display: inline-block; margin-right: 4px; vertical-align: middle;
+}
+
+/* habits */
+.habits-card { background: var(--surface); border-radius: var(--radius); overflow: hidden; }
+
+.habit-row {
+  display: flex; align-items: center;
+  padding: 0.875rem 1.125rem;
+  border-bottom: 1px solid var(--border);
+  gap: 0.875rem;
+}
+.habit-row:last-child { border-bottom: none; }
+
+.habit-check {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 1.5px solid var(--muted2); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s;
+}
+.habit-check.done { background: var(--green); border-color: var(--green); }
+.habit-check.done svg { display: block; }
+.habit-check svg {
+  display: none; width: 12px; height: 12px;
+  stroke: white; fill: none; stroke-width: 3; stroke-linecap: round;
+}
+
+.habit-name { font-size: 15px; font-weight: 400; color: var(--text); flex: 1; }
+
+.no-data { font-size: 14px; color: var(--muted); text-align: center; padding: 2rem; }
+
+/* bottom bar */
+.bottom-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  z-index: 20; display: flex; justify-content: center;
+  padding: 0.75rem 1.25rem 1.5rem;
+  background: linear-gradient(to top, #0a0a0a 50%, transparent);
+}
+
+.actions { display: flex; gap: 0.5rem; width: 100%; max-width: 480px; }
+
+.action-btn {
+  flex: 1; background: var(--surface); border: none;
+  border-radius: var(--radius-sm); padding: 0.75rem 0.5rem;
+  font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600;
+  color: var(--text); cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  transition: background 0.15s;
+}
+.action-btn:hover { background: var(--surface2); }
+.action-btn:active { transform: scale(0.97); }
+.action-btn svg {
+  width: 18px; height: 18px; stroke: var(--accent); fill: none;
+  stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* modals */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px);
+  z-index: 100; display: flex;
+  align-items: flex-end; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.25s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+
+.modal {
+  width: 100%; max-width: 480px;
+  background: var(--surface2);
+  border-radius: 24px 24px 0 0;
+  padding: 1.25rem 1.5rem 2.5rem;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.32,0.72,0,1);
+}
+.modal-overlay.open .modal { transform: translateY(0); }
+
+.modal-handle {
+  width: 36px; height: 4px;
+  background: var(--surface3); border-radius: 2px; margin: 0 auto 1.25rem;
+}
+
+.modal-title { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: 1.25rem; }
+
+.modal-field { margin-bottom: 0.875rem; }
+
+.modal-field label {
+  display: block; font-size: 12px; font-weight: 500;
+  color: var(--muted); margin-bottom: 6px;
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+
+.modal-field input {
+  width: 100%; background: var(--surface3); border: none;
+  border-radius: var(--radius-sm); padding: 0.75rem 1rem;
+  font-size: 15px; font-family: 'Inter', sans-serif;
+  color: var(--text); outline: none; -webkit-appearance: none;
+}
+.modal-field input:focus { background: #2a2a2a; }
+.modal-field input::placeholder { color: var(--muted2); }
+
+.modal-submit {
+  width: 100%; background: var(--accent); color: white;
+  border: none; border-radius: var(--radius-sm); padding: 0.875rem;
+  font-size: 15px; font-weight: 600; font-family: 'Inter', sans-serif;
+  cursor: pointer; margin-top: 0.5rem;
+}
+.modal-submit:active { opacity: 0.8; }
+
+.modal-error { font-size: 13px; color: #ff6b6b; margin-top: 0.5rem; display: none; }
+.modal-error.show { display: block; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="greeting">Good day,</span>
+      <span class="username" id="username">—</span>
+    </div>
+    <a href="profile.html" class="profile-btn">
+      <svg viewBox="0 0 24 24">
+        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+    </a>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Weight</span>
+      <a href="weight.html" class="section-link">History</a>
+    </div>
+    <a href="weight.html" class="weight-card">
+      <div class="weight-top">
+        <div class="weight-main">
+          <span class="weight-label">Current</span>
+          <div class="weight-val" id="weight-current">—<span>kg</span></div>
+          <div class="weight-delta" id="weight-delta"></div>
+        </div>
+        <div class="weight-right">
+          <span class="bmi-pill" id="bmi-pill">—</span>
+          <span class="bmi-num">BMI <span id="bmi-num">—</span></span>
+        </div>
+      </div>
+      <canvas id="weightChart"></canvas>
+      <div class="chart-dates" id="chart-dates"></div>
+    </a>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Nutrition</span>
+      <span style="font-size:12px;color:var(--muted)" id="cal-date"></span>
+    </div>
+    <div class="calorie-card">
+      <div class="calorie-top">
+        <span class="calorie-label">Calories today</span>
+        <div class="calorie-nums">
+          <span class="calorie-consumed" id="cal-consumed">0</span>
+          <span class="calorie-goal">/ 2000 kcal</span>
+        </div>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" id="cal-bar"></div>
+      </div>
+      <div class="macros">
+        <div class="macro-item">
+          <div class="macro-val" id="mac-protein">0<span>g</span></div>
+          <div class="macro-name"><span class="macro-dot" style="background:#e0000a"></span>Protein</div>
+        </div>
+        <div class="macro-item">
+          <div class="macro-val" id="mac-carbs">0<span>g</span></div>
+          <div class="macro-name"><span class="macro-dot" style="background:#ff9f0a"></span>Carbs</div>
+        </div>
+        <div class="macro-item">
+          <div class="macro-val" id="mac-fats">0<span>g</span></div>
+          <div class="macro-name"><span class="macro-dot" style="background:#636366"></span>Fats</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Habits</span>
+    </div>
+    <div class="habits-card" id="habits-card">
+      <div class="no-data">Loading...</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="bottom-bar">
+  <div class="actions">
+    <button class="action-btn" onclick="openModal('weight')">
+      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      Weight
+    </button>
+    <button class="action-btn" onclick="openModal('calorie')">
+      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      Calories
+    </button>
+    <button class="action-btn" onclick="openModal('habit')">
+      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      Habit
+    </button>
+  </div>
+</div>
+
+<!-- weight modal -->
+<div class="modal-overlay" id="modal-weight" onclick="closeOnOverlay(event,'weight')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Log Weight</div>
+    <div class="modal-field">
+      <label>Weight (kg)</label>
+      <input type="number" id="input-weight" placeholder="e.g. 72.5" step="0.1"/>
+    </div>
+    <div class="modal-error" id="err-weight"></div>
+    <button class="modal-submit" onclick="submitWeight()">Save</button>
+  </div>
+</div>
+
+<!-- calorie modal -->
+<div class="modal-overlay" id="modal-calorie" onclick="closeOnOverlay(event,'calorie')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Log Food</div>
+    <div class="modal-field">
+      <label>Food Name</label>
+      <input type="text" id="input-food" placeholder="e.g. chicken breast"/>
+    </div>
+    <div class="modal-field">
+      <label>Quantity (grams)</label>
+      <input type="number" id="input-qty" placeholder="e.g. 150"/>
+    </div>
+    <div class="modal-error" id="err-calorie"></div>
+    <button class="modal-submit" onclick="submitCalorie()">Log Food</button>
+  </div>
+</div>
+
+<!-- habit modal -->
+<div class="modal-overlay" id="modal-habit" onclick="closeOnOverlay(event,'habit')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">New Habit</div>
+    <div class="modal-field">
+      <label>Habit Name</label>
+      <input type="text" id="input-habit" placeholder="e.g. Morning Run"/>
+    </div>
+    <div class="modal-field">
+      <label>Description</label>
+      <input type="text" id="input-habit-desc" placeholder="e.g. Run 5km every morning"/>
+    </div>
+    <div class="modal-error" id="err-habit"></div>
+    <button class="modal-submit" onclick="submitHabit()">Create</button>
+  </div>
+</div>
+
+<script>
+const API = "https://pulse-log.onrender.com";
+const token = localStorage.getItem('token');
+if (!token) window.location.href = 'login.html';
+const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+
+const h = new Date().getHours();
+document.querySelector('.greeting').textContent = h < 12 ? 'Good morning,' : h < 17 ? 'Good afternoon,' : 'Good evening,';
+document.getElementById('cal-date').textContent = new Date().toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short' });
+
+async function loadAll() {
+  try {
+    const [meRes, weightRes, calorieRes, bmiRes, habitRes] = await Promise.all([
+      fetch(`${API}/me`, { headers }),
+      fetch(`${API}/weight`, { headers }),
+      fetch(`${API}/calorielog`, { headers }),
+      fetch(`${API}/bmi`, { headers }),
+      fetch(`${API}/habit`, { headers }),
+    ]);
+    if (meRes.status === 401) { localStorage.removeItem('token'); window.location.href = 'login.html'; return; }
+    const [me, weights, calories, bmi, habits] = await Promise.all([
+      meRes.json(), weightRes.json(), calorieRes.json(), bmiRes.json(), habitRes.json()
+    ]);
+    renderUser(me); renderBMI(bmi); renderWeight(weights); renderCalories(calories); renderHabits(habits);
+  } catch(e) { console.error(e); }
+}
+
+function renderUser(me) { document.getElementById('username').textContent = me.username; }
+
+function renderBMI(bmi) {
+  document.getElementById('bmi-num').textContent = bmi.bmi;
+  const pill = document.getElementById('bmi-pill');
+  pill.textContent = bmi.category;
+  pill.className = 'bmi-pill ' + bmi.category.toLowerCase();
+}
+
+function renderWeight(weights) {
+  if (!weights.length) return;
+  const sorted = weights.slice().sort((a,b) => new Date(a.logged_at)-new Date(b.logged_at));
+  const last = sorted[sorted.length-1];
+  document.getElementById('weight-current').innerHTML = `${last.weight}<span>kg</span>`;
+  if (sorted.length > 1) {
+    const diff = (last.weight - sorted[sorted.length-2].weight).toFixed(1);
+    const el = document.getElementById('weight-delta');
+    el.textContent = (diff>0?'+':'')+diff+' from last';
+    el.className = 'weight-delta '+(diff>0?'up':'down');
+  }
+  const recent = sorted.slice(-7);
+  const c = document.getElementById('weightChart');
+  const cCtx = c.getContext('2d');
+  c.width = c.offsetWidth * window.devicePixelRatio;
+  c.height = 80 * window.devicePixelRatio;
+  cCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  const W = c.offsetWidth, H = 80;
+  const vals = recent.map(w=>w.weight);
+  const min = Math.min(...vals)-1, max = Math.max(...vals)+1;
+  const xStep = W/(recent.length-1||1);
+  const pts = vals.map((v,i)=>({x:i*xStep, y:H-((v-min)/(max-min||1))*(H-16)-8}));
+  const grad = cCtx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0,'rgba(224,0,10,0.2)'); grad.addColorStop(1,'rgba(224,0,10,0)');
+  cCtx.beginPath(); cCtx.moveTo(pts[0].x,pts[0].y);
+  for(let i=1;i<pts.length;i++){const mx=(pts[i-1].x+pts[i].x)/2;cCtx.bezierCurveTo(mx,pts[i-1].y,mx,pts[i].y,pts[i].x,pts[i].y);}
+  cCtx.lineTo(pts[pts.length-1].x,H); cCtx.lineTo(pts[0].x,H); cCtx.closePath();
+  cCtx.fillStyle=grad; cCtx.fill();
+  cCtx.beginPath(); cCtx.moveTo(pts[0].x,pts[0].y);
+  for(let i=1;i<pts.length;i++){const mx=(pts[i-1].x+pts[i].x)/2;cCtx.bezierCurveTo(mx,pts[i-1].y,mx,pts[i].y,pts[i].x,pts[i].y);}
+  cCtx.strokeStyle='#e0000a'; cCtx.lineWidth=2; cCtx.stroke();
+  for(const p of pts){
+    cCtx.beginPath();cCtx.arc(p.x,p.y,3,0,Math.PI*2);cCtx.fillStyle='#e0000a';cCtx.fill();
+    cCtx.beginPath();cCtx.arc(p.x,p.y,1.5,0,Math.PI*2);cCtx.fillStyle='#f2f2f2';cCtx.fill();
+  }
+  document.getElementById('chart-dates').innerHTML = recent.map(w=>{const d=new Date(w.logged_at);return`<span>${d.getDate()}/${d.getMonth()+1}</span>`;}).join('');
+}
+
+function renderCalories(all) {
+  const todayStr = new Date().toDateString();
+  const logs = all.filter(c=>new Date(c.logged_at).toDateString()===todayStr);
+  const kcal = logs.reduce((s,c)=>s+c.calories_kcal,0);
+  document.getElementById('cal-consumed').textContent = Math.round(kcal);
+  document.getElementById('cal-bar').style.width = Math.min(kcal/2000*100,100)+'%';
+  document.getElementById('mac-protein').innerHTML = `${Math.round(logs.reduce((s,c)=>s+c.protein_g,0))}<span>g</span>`;
+  document.getElementById('mac-carbs').innerHTML = `${Math.round(logs.reduce((s,c)=>s+c.carb_g,0))}<span>g</span>`;
+  document.getElementById('mac-fats').innerHTML = `${Math.round(logs.reduce((s,c)=>s+c.fats_g,0))}<span>g</span>`;
+}
+
+function renderHabits(habits) {
+  const el = document.getElementById('habits-card');
+  if (!habits.length) { el.innerHTML='<div class="no-data">No habits yet. Add one below.</div>'; return; }
+  el.innerHTML = habits.slice(0,6).map(h=>`
+    <div class="habit-row">
+      <div class="habit-check" onclick="this.classList.toggle('done')">
+        <svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg>
+      </div>
+      <span class="habit-name">${h.habit}</span>
+    </div>
+  `).join('');
+}
+
+function openModal(t){document.getElementById('modal-'+t).classList.add('open');}
+function closeModal(t){document.getElementById('modal-'+t).classList.remove('open');}
+function closeOnOverlay(e,t){if(e.target===e.currentTarget)closeModal(t);}
+
+async function submitWeight() {
+  const val = parseFloat(document.getElementById('input-weight').value);
+  const err = document.getElementById('err-weight');
+  if(!val||val<=0){err.textContent='Enter a valid weight.';err.classList.add('show');return;}
+  err.classList.remove('show');
+  try{
+    const res = await fetch(`${API}/weight`,{method:'POST',headers,body:JSON.stringify({weight:val})});
+    if(!res.ok)throw new Error();
+    document.getElementById('input-weight').value='';
+    closeModal('weight');loadAll();
+  }catch{err.textContent='Something went wrong.';err.classList.add('show');}
+}
+
+async function submitCalorie() {
+  const food = document.getElementById('input-food').value.trim();
+  const qty = parseFloat(document.getElementById('input-qty').value);
+  const err = document.getElementById('err-calorie');
+  if(!food||!qty||qty<=0){err.textContent='Fill in both fields.';err.classList.add('show');return;}
+  err.classList.remove('show');
+  const btn = document.querySelector('#modal-calorie .modal-submit');
+  btn.textContent='Searching...';btn.style.opacity='0.6';btn.style.pointerEvents='none';
+  try{
+    const res = await fetch(`${API}/calorielog`,{method:'POST',headers,body:JSON.stringify({food_name:food,quantity:qty})});
+    if(!res.ok){const d=await res.json();throw new Error(d.detail||'Not found');}
+    document.getElementById('input-food').value='';
+    document.getElementById('input-qty').value='';
+    closeModal('calorie');loadAll();
+  }catch(e){err.textContent=e.message;err.classList.add('show');}
+  finally{btn.textContent='Log Food';btn.style.opacity='';btn.style.pointerEvents='';}
+}
+
+async function submitHabit() {
+  const habit = document.getElementById('input-habit').value.trim();
+  const desc = document.getElementById('input-habit-desc').value.trim();
+  const err = document.getElementById('err-habit');
+  if(!habit||!desc){err.textContent='Fill in both fields.';err.classList.add('show');return;}
+  err.classList.remove('show');
+  try{
+    const res = await fetch(`${API}/habit`,{method:'POST',headers,body:JSON.stringify({habit,description:desc})});
+    if(!res.ok)throw new Error();
+    document.getElementById('input-habit').value='';
+    document.getElementById('input-habit-desc').value='';
+    closeModal('habit');loadAll();
+  }catch{err.textContent='Something went wrong.';err.classList.add('show');}
+}
+
+loadAll();
+</script>
+</body>
+</html>

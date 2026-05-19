@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PulseLog — Profile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0a0a0a;
+  --surface: #161616;
+  --surface2: #1e1e1e;
+  --surface3: #252525;
+  --border: rgba(255,255,255,0.07);
+  --text: #f2f2f2;
+  --muted: #888;
+  --muted2: #555;
+  --accent: #e0000a;
+  --accent-dim: rgba(224,0,10,0.12);
+  --green: #30d158;
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+
+html, body {
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar { width: 0; }
+
+.app {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding-bottom: 3rem;
+}
+
+/* topbar */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem 0.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg);
+}
+
+.back-btn {
+  width: 32px; height: 32px;
+  background: var(--surface2);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; text-decoration: none;
+  transition: background 0.15s;
+  border: none;
+}
+.back-btn:hover { background: var(--surface3); }
+.back-btn svg {
+  width: 16px; height: 16px;
+  stroke: var(--text); fill: none;
+  stroke-width: 2.5; stroke-linecap: round;
+}
+
+.topbar-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.edit-btn {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+.edit-btn:hover { background: var(--accent-dim); }
+
+/* avatar section */
+.avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 1.25rem 1.25rem;
+  animation: fadeUp 0.4s ease both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.avatar {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+  border: 3px solid var(--surface3);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 0.875rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.avatar-initials {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+.avatar-ring {
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: conic-gradient(var(--accent) 0%, transparent 60%);
+  z-index: -1;
+  animation: spin 8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.profile-name {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.profile-email {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+/* stats strip */
+.stats-strip {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.5rem;
+  padding: 0 1.25rem;
+  margin-bottom: 1.25rem;
+  animation: fadeUp 0.4s ease 0.05s both;
+}
+
+.stat-pill {
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 0.875rem 0.5rem;
+  text-align: center;
+}
+
+.stat-pill-val {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.stat-pill-val span {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.stat-pill-label {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+/* bmi card */
+.bmi-card {
+  margin: 0 1.25rem 1.25rem;
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  animation: fadeUp 0.4s ease 0.1s both;
+}
+
+.bmi-left { display: flex; flex-direction: column; gap: 3px; }
+
+.bmi-label {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.bmi-value {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--text);
+}
+
+.bmi-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.01em;
+}
+
+.bmi-badge.normal { background: rgba(48,209,88,0.15); color: var(--green); }
+.bmi-badge.underweight { background: rgba(255,159,10,0.15); color: #ff9f0a; }
+.bmi-badge.overweight { background: var(--accent-dim); color: var(--accent); }
+
+/* section */
+.section {
+  padding: 0 1.25rem;
+  margin-bottom: 1.25rem;
+  animation: fadeUp 0.4s ease 0.15s both;
+}
+
+.section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.5rem;
+  padding-left: 4px;
+}
+
+.list-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1.125rem;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+
+.list-row:last-child { border-bottom: none; }
+.list-row:active { background: var(--surface2); }
+
+.row-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.row-icon {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.row-label {
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--text);
+}
+
+.row-value {
+  font-size: 15px;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.row-arrow {
+  width: 16px; height: 16px;
+  stroke: var(--muted2); fill: none;
+  stroke-width: 2.5; stroke-linecap: round;
+  margin-left: 6px;
+}
+
+/* edit mode */
+.row-input {
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 15px;
+  font-family: 'Inter', sans-serif;
+  color: var(--accent);
+  text-align: right;
+  width: 80px;
+  -webkit-appearance: none;
+}
+
+.row-input::placeholder { color: var(--muted2); }
+
+/* logout */
+.logout-card {
+  margin: 0 1.25rem;
+  animation: fadeUp 0.4s ease 0.2s both;
+}
+
+.logout-btn {
+  width: 100%;
+  background: var(--surface);
+  border: none;
+  border-radius: var(--radius);
+  padding: 1rem;
+  font-size: 15px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  color: var(--accent);
+  cursor: pointer;
+  transition: background 0.15s;
+  text-align: center;
+}
+
+.logout-btn:hover { background: var(--surface2); }
+.logout-btn:active { background: var(--surface3); }
+
+/* save bar */
+.save-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  padding: 0.75rem 1.25rem 1.5rem;
+  background: linear-gradient(to top, var(--bg) 60%, transparent);
+  display: flex;
+  gap: 0.5rem;
+  max-width: 480px;
+  margin: 0 auto;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.32,0.72,0,1);
+  z-index: 20;
+  left: 50%;
+  transform: translateX(-50%) translateY(100%);
+}
+
+.save-bar.visible {
+  transform: translateX(-50%) translateY(0);
+}
+
+.btn-cancel {
+  flex: 1;
+  background: var(--surface2);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0.875rem;
+  font-size: 15px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.btn-save {
+  flex: 2;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0.875rem;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  color: white;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.btn-save:active { opacity: 0.8; }
+
+.toast {
+  position: fixed;
+  bottom: 5rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--surface3);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: 20px;
+  opacity: 0;
+  transition: all 0.3s ease;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 30;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- topbar -->
+  <div class="topbar">
+    <a href="index.html" class="back-btn">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </a>
+    <span class="topbar-title">Profile</span>
+    <button class="edit-btn" id="edit-btn" onclick="toggleEdit()">Edit</button>
+  </div>
+
+  <!-- avatar -->
+  <div class="avatar-section">
+    <div class="avatar">
+      <div class="avatar-ring"></div>
+      <span class="avatar-initials" id="avatar-initials">—</span>
+    </div>
+    <div class="profile-name" id="profile-name">—</div>
+    <div class="profile-email" id="profile-email">—</div>
+  </div>
+
+  <!-- stats strip -->
+  <div class="stats-strip">
+    <div class="stat-pill">
+      <div class="stat-pill-val" id="stat-weight">—<span>kg</span></div>
+      <div class="stat-pill-label">Weight</div>
+    </div>
+    <div class="stat-pill">
+      <div class="stat-pill-val" id="stat-height">—<span>cm</span></div>
+      <div class="stat-pill-label">Height</div>
+    </div>
+    <div class="stat-pill">
+      <div class="stat-pill-val" id="stat-age">—</div>
+      <div class="stat-pill-label">Age</div>
+    </div>
+  </div>
+
+  <!-- bmi -->
+  <div class="bmi-card">
+    <div class="bmi-left">
+      <span class="bmi-label">Body Mass Index</span>
+      <span class="bmi-value" id="bmi-val">—</span>
+    </div>
+    <span class="bmi-badge" id="bmi-badge">—</span>
+  </div>
+
+  <!-- body stats section -->
+  <div class="section">
+    <div class="section-title">Body</div>
+    <div class="list-card">
+      <div class="list-row">
+        <div class="row-left">
+          <div class="row-icon" style="background:rgba(224,0,10,0.12)">⚖️</div>
+          <span class="row-label">Current Weight</span>
+        </div>
+        <div style="display:flex;align-items:center">
+          <span class="row-value" id="val-weight">—</span>
+          <input class="row-input" id="inp-weight" type="number" step="0.1" placeholder="kg" style="display:none"/>
+          <span class="row-value" style="margin-left:3px" id="unit-weight">kg</span>
+        </div>
+      </div>
+      <div class="list-row">
+        <div class="row-left">
+          <div class="row-icon" style="background:rgba(0,122,255,0.12)">📏</div>
+          <span class="row-label">Height</span>
+        </div>
+        <div style="display:flex;align-items:center">
+          <span class="row-value" id="val-height">—</span>
+          <input class="row-input" id="inp-height" type="number" step="0.1" placeholder="cm" style="display:none"/>
+          <span class="row-value" style="margin-left:3px" id="unit-height">cm</span>
+        </div>
+      </div>
+      <div class="list-row">
+        <div class="row-left">
+          <div class="row-icon" style="background:rgba(48,209,88,0.12)">🎯</div>
+          <span class="row-label">Target Weight</span>
+        </div>
+        <div style="display:flex;align-items:center">
+          <span class="row-value" id="val-target">—</span>
+          <input class="row-input" id="inp-target" type="number" step="0.1" placeholder="kg" style="display:none"/>
+          <span class="row-value" style="margin-left:3px" id="unit-target">kg</span>
+        </div>
+      </div>
+      <div class="list-row">
+        <div class="row-left">
+          <div class="row-icon" style="background:rgba(255,159,10,0.12)">🎂</div>
+          <span class="row-label">Age</span>
+        </div>
+        <div style="display:flex;align-items:center">
+          <span class="row-value" id="val-age">—</span>
+          <input class="row-input" id="inp-age" type="number" placeholder="yrs" style="display:none"/>
+          <span class="row-value" style="margin-left:3px" id="unit-age">yrs</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- account section -->
+  <div class="section">
+    <div class="section-title">Account</div>
+    <div class="list-card">
+      <div class="list-row">
+        <div class="row-left">
+          <div class="row-icon" style="background:rgba(255,255,255,0.06)">👤</div>
+          <span class="row-label">Username</span>
+        </div>
+        <span class="row-value" id="val-username">—</span>
+      </div>
+      <div class="list-row">
+        <div class="row-left">
+          <div class="row-icon" style="background:rgba(255,255,255,0.06)">✉️</div>
+          <span class="row-label">Email</span>
+        </div>
+        <span class="row-value" id="val-email">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- logout -->
+  <div class="logout-card">
+    <button class="logout-btn" onclick="logout()">Log Out</button>
+  </div>
+</div>
+
+<!-- save bar -->
+<div class="save-bar" id="save-bar">
+  <button class="btn-cancel" onclick="cancelEdit()">Cancel</button>
+  <button class="btn-save" onclick="saveChanges()">Save Changes</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = "https://pulse-log.onrender.com";
+const token = localStorage.getItem('token');
+if (!token) window.location.href = 'login.html';
+const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+
+let userData = {};
+let editing = false;
+
+async function loadProfile() {
+  try {
+    const [meRes, bmiRes] = await Promise.all([
+      fetch(`${API}/me`, { headers }),
+      fetch(`${API}/bmi`, { headers }),
+    ]);
+
+    if (meRes.status === 401) { localStorage.removeItem('token'); window.location.href = 'login.html'; return; }
+
+    const me = await meRes.json();
+    const bmi = await bmiRes.json();
+    userData = me;
+
+    // avatar
+    const initials = me.username.slice(0, 2).toUpperCase();
+    document.getElementById('avatar-initials').textContent = initials;
+    document.getElementById('profile-name').textContent = me.username;
+    document.getElementById('profile-email').textContent = me.email;
+
+    // stats strip
+    document.getElementById('stat-weight').innerHTML = `${me.weight}<span>kg</span>`;
+    document.getElementById('stat-height').innerHTML = `${me.height}<span>cm</span>`;
+    document.getElementById('stat-age').textContent = me.age;
+
+    // bmi
+    document.getElementById('bmi-val').textContent = bmi.bmi;
+    const badge = document.getElementById('bmi-badge');
+    badge.textContent = bmi.category;
+    badge.className = 'bmi-badge ' + bmi.category.toLowerCase();
+
+    // list rows
+    document.getElementById('val-weight').textContent = me.weight;
+    document.getElementById('val-height').textContent = me.height;
+    document.getElementById('val-target').textContent = me.target_weight;
+    document.getElementById('val-age').textContent = me.age;
+    document.getElementById('val-username').textContent = me.username;
+    document.getElementById('val-email').textContent = me.email;
+
+    // prefill inputs
+    document.getElementById('inp-weight').value = me.weight;
+    document.getElementById('inp-height').value = me.height;
+    document.getElementById('inp-target').value = me.target_weight;
+    document.getElementById('inp-age').value = me.age;
+
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+function toggleEdit() {
+  editing = !editing;
+  const fields = ['weight', 'height', 'target', 'age'];
+
+  fields.forEach(f => {
+    const val = document.getElementById(`val-${f}`);
+    const inp = document.getElementById(`inp-${f}`);
+    const unit = document.getElementById(`unit-${f}`);
+    if (editing) {
+      val.style.display = 'none';
+      inp.style.display = 'block';
+      unit.style.display = 'none';
+    } else {
+      val.style.display = 'block';
+      inp.style.display = 'none';
+      unit.style.display = 'inline';
+    }
+  });
+
+  document.getElementById('edit-btn').textContent = editing ? 'Cancel' : 'Edit';
+  document.getElementById('save-bar').classList.toggle('visible', editing);
+}
+
+function cancelEdit() {
+  // reset inputs to original values
+  document.getElementById('inp-weight').value = userData.weight;
+  document.getElementById('inp-height').value = userData.height;
+  document.getElementById('inp-target').value = userData.target_weight;
+  document.getElementById('inp-age').value = userData.age;
+  if (editing) toggleEdit();
+}
+
+async function saveChanges() {
+  const weight = parseFloat(document.getElementById('inp-weight').value);
+  const height = parseFloat(document.getElementById('inp-height').value);
+  const target = parseFloat(document.getElementById('inp-target').value);
+  const age = parseInt(document.getElementById('inp-age').value);
+
+  if (!weight || !height || !target || !age) {
+    showToast('Please fill in all fields'); return;
+  }
+
+  const btn = document.querySelector('.btn-save');
+  btn.textContent = 'Saving...';
+  btn.style.opacity = '0.6';
+
+  try {
+    // we don't have an update endpoint yet so we log new weight at least
+    await fetch(`${API}/weight`, {
+      method: 'POST', headers,
+      body: JSON.stringify({ weight })
+    });
+
+    // update local display
+    userData.weight = weight;
+    userData.height = height;
+    userData.target_weight = target;
+    userData.age = age;
+
+    document.getElementById('val-weight').textContent = weight;
+    document.getElementById('val-height').textContent = height;
+    document.getElementById('val-target').textContent = target;
+    document.getElementById('val-age').textContent = age;
+    document.getElementById('stat-weight').innerHTML = `${weight}<span>kg</span>`;
+    document.getElementById('stat-height').innerHTML = `${height}<span>cm</span>`;
+    document.getElementById('stat-age').textContent = age;
+
+    toggleEdit();
+    showToast('✓ Changes saved');
+  } catch(e) {
+    showToast('Something went wrong');
+  } finally {
+    btn.textContent = 'Save Changes';
+    btn.style.opacity = '';
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function logout() {
+  localStorage.removeItem('token');
+  window.location.href = 'login.html';
+}
+
+loadProfile();
+</script>
+</body>
+</html>
