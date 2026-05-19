@@ -1,9 +1,12 @@
 from sqlalchemy import create_engine#connects to the database
 from sqlalchemy.orm import declarative_base, sessionmaker# base
+import os 
+from dotenv import load_dotenv
 #class for models and also talked to the channels
 #evrythign is sqlalchemy
 
-SQLALCHEMY_DATABASE_URL="sqlite:///./calorie_tracker.db"
+load_dotenv()
+SQLALCHEMY_DATABASE_URL=os.getenv("DATABASE_URL")
 
 Base = declarative_base()# so without this everything will just look like
 #regular python
