@@ -177,6 +177,11 @@ def habit_getting(db:Annotated[Session,Depends(get_db)],current_user= Depends(ge
     )
     habits= result.scalars().all()
     return habits
+@app.get("/habit", response_model=List[habit_response])
+def get_habits(db: Annotated[Session, Depends(get_db)], current_user=Depends(get_currentr_user)):
+    result = db.execute(select(models.habit_create).where(models.habit_create.user_id == current_user.id))
+    habits = result.scalars().all()
+    return habits
 @app.get("/bmi")
 def get_bmi(current_user=Depends(get_currentr_user)):
     height_m = current_user.height / 100 
