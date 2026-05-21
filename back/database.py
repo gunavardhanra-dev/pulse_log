@@ -10,7 +10,7 @@ SQLALCHEMY_DATABASE_URL=os.getenv("DATABASE_URL")
 
 Base = declarative_base()# so without this everything will just look like
 #regular python
-engine = create_engine(SQLALCHEMY_DATABASE_URL,connect_args={"check_same_thread":False})
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
 sessionLocal= sessionmaker(autocommit = False, autoflush=False, bind=engine)
 def get_db():
     with sessionLocal() as db:
