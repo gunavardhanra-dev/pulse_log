@@ -27,6 +27,14 @@ app.add_middleware(
 
 
 models.Base.metadata.create_all(bind=engine)
+# a method in SQLAlchemy used to automatically generate database tables 
+#based on your password classwes
+
+#the models base metadata line we had looks at all our models and creats a table the
+#the problem is it only creates and never modifies
+#alembic solves this by tracking every schema change and applying them safely
+#to an existing database without losing the data
+
 pwd_context= CryptContext(schemes=["bcrypt"],deprecated="auto")
 #cryptcontext is thr tool from passlib that handles password hashing
 #schemes line is the industry standard used for password hashing
