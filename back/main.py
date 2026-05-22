@@ -5,6 +5,8 @@ from passlib.context import CryptContext
 from dotenv import load_dotenv
 from typing import List
 from fastapi.middleware.cors import CORSMiddleware
+from alembic.config import Config
+from alembic import command
 
 import os
 import requests
@@ -16,6 +18,12 @@ from  sqlalchemy import select
 from back.auth import create_access_token, get_currentr_user
 app= FastAPI()
 load_dotenv()
+
+
+def run_migration():
+    alembic_cfg =Config("back/alembic.ini")
+    command.upgrade(alembic_cfg,"head")
+run_migration()
 
 app.add_middleware(
     CORSMiddleware,
@@ -39,6 +47,9 @@ pwd_context= CryptContext(schemes=["bcrypt"],deprecated="auto")
 #cryptcontext is thr tool from passlib that handles password hashing
 #schemes line is the industry standard used for password hashing
 #deprecated line is the thing used to make sure if we ever switch algos  handles # schemes
+def run_migration():
+    alembic_cfg = Config("back/alembic.ini")
+    command.upgrade(alembic_cfg, "head")
 
 @app.post("/registration", response_model= UserResponse)
 def user_registration (user:UserCreate, db:Annotated[Session,Depends(get_db)]):
