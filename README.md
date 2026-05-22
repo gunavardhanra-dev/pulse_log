@@ -1,8 +1,8 @@
 # PulseLog
 
-Built out of personal frustration — every health app is either bloated, paywalled, or just missing half the things you actually need. So I built my own.
+Built out of personal frustration — every health app is either paywalled, or just missing half the things you actually need. So I built my own.
 
-PulseLog tracks calories, weight trends, and daily habits in one place. Nothing more, nothing less. Built for me and my friends while learning the entire stack from scratch — FastAPI, PostgreSQL, JWT auth, and deployment — all in under 3 months of coding.
+PulseLog tracks calories, weight trends, and daily habits in one place. Nothing more, nothing less. Built for me and my friends while learning the entire stack from scratch FastAPI, PostgreSQL, JWT auth, and deployment ,all in under 3 months of coding.
 
 🔗 **[Live App](https://resonant-kringle-307e9a.netlify.app)**  
 🔗 **[API Docs](https://pulse-log.onrender.com/docs)**
