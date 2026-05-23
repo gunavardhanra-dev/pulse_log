@@ -7,6 +7,7 @@ from typing import List
 from fastapi.middleware.cors import CORSMiddleware
 from alembic.config import Config
 from alembic import command
+from contextlib import asynccontextmanager
 
 import os
 import requests
@@ -16,15 +17,22 @@ from back.database import Base,get_db, engine
 from sqlalchemy.orm import Session
 from  sqlalchemy import select
 from back.auth import create_access_token, get_currentr_user
-app= FastAPI()
 load_dotenv()
 
 
 def run_migration():
     alembic_cfg =Config("back/alembic.ini")
     command.upgrade(alembic_cfg,"head")
-run_migration()
+    #Applying migrations — this is what run_migrations() 
+    #in main.py does every time the app starts
+    #It just runs whatever migration files exist that haven't been applied yet.
+@asynccontextmanager
+async def lifespan_hook(app:FastAPI):
+    run_migration()
+    yield 
+app= FastAPI(lifespan=lifespan_hook)
 
+    
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
