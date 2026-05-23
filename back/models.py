@@ -12,6 +12,10 @@ class User(Base):
     weight:Mapped[float] =mapped_column(nullable=False)
     height:Mapped[float] =mapped_column(nullable=False)
     target_weight:Mapped[float] =mapped_column()
+    weight_loss_rate:Mapped[float]=mapped_column(nullable=True)
+    activity_level:Mapped[str]= mapped_column(nullable=True)
+    average_daily_steps:Mapped[int]=mapped_column(nullable=True)
+    goal_type:Mapped[str]=mapped_column(nullable=True) 
     email:Mapped[str]=mapped_column(unique=True,nullable=False)
     password:Mapped[str]=mapped_column(nullable=False)
     

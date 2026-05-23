@@ -1,14 +1,19 @@
 # schemas is pydantic 
 from pydantic import BaseModel, ConfigDict, Field,  EmailStr
 from datetime import datetime
+from typing import  Optional
 
 class Userbase(BaseModel):
     username:str
     email:str
     age:int
-    weight:float
     height:float
+    weight:float
     target_weight:float
+    weight_loss_rate:Optional[float]
+    activity_level:Optional[str]
+    average_daily_steps:Optional[int]
+    goal_type:Optional[str]
 
 class UserCreate(Userbase):
     password:str = Field(min_length=8)
