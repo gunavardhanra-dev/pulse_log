@@ -28,7 +28,7 @@ class Weight_Log(Base):
 class meal_log(Base):
     __tablename__="calories"
     id:Mapped[int]=mapped_column(primary_key=True,index=True)
-    user_id:Mapped[int]= mapped_column(ForeignKey("users.id"))
+    user_id:Mapped[int]= mapped_column(ForeignKey("users.id"),nullable=False,index=True)
     food_name:Mapped[str]= mapped_column()
     quantity:Mapped[float]=mapped_column(nullable=False)
     calories_kcal:Mapped[float]=mapped_column(nullable=False)
