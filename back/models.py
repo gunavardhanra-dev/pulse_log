@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey, Integer, String, Text,Float, func
+from sqlalchemy import Index,ForeignKey, Integer, String, Text,Float, func
 from sqlalchemy.orm import Mapped,mapped_column, relationship
 from back.database import Base
 from datetime import datetime, timezone
@@ -36,6 +36,10 @@ class meal_log(Base):
     carb_g:Mapped[float]=mapped_column(nullable=False)
     fats_g:Mapped[float]=mapped_column(nullable=False)
     logged_at:Mapped[datetime]= mapped_column(nullable=False, default=func.now())
+    __table_args__=(
+        Index('ix_calories_user_id_logged_at', 'user_id', 'logged_at'),
+        #the "," in the end makes this a tupple lol quick note
+    )
 class habit_create(Base):
     __tablename__="habits"
     id:Mapped[int]=mapped_column(primary_key=True,index=True)
