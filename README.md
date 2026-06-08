@@ -174,4 +174,4 @@ pulse_log/
 
 ## Author
 
-[Gunavardhan](https://github.com/gunavardhanra-dev) — 3rd year engineering student, started coding 3 months ago, building toward backend development and a Master's in Germany. This is Project 1.
+[Gunavardhan](https://github.com/gunavardhanra-dev) — 3rd year engineering student, started coding 4 months ago, building toward backend development and a Master's in Germany. This is Project 1.
