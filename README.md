@@ -1,8 +1,8 @@
 # PulseLog
 
-Built out of personal frustration,every health app is either paywalled, or just missing half the things you actually need. So I built my own.
+Built out of personal frustration — every health app is either paywalled or missing half the things you actually need. So I built my own.
 
-PulseLog tracks calories, weight trends, and daily habits in one place. Nothing more, nothing less. Built for me and my friends while learning the entire stack from scratch FastAPI, PostgreSQL, JWT auth, and deployment ,all in under 3 months of coding.
+PulseLog tracks calories, weight trends, and daily habits in one place. Nothing more, nothing less. Built for me and my friends while learning the entire stack from scratch — FastAPI, PostgreSQL, JWT auth, Docker, and deployment — in under 3 months of coding.
 
 🔗 **[Live App](https://resonant-kringle-307e9a.netlify.app)**  
 🔗 **[API Docs](https://pulse-log.onrender.com/docs)**
@@ -31,14 +31,39 @@ PulseLog tracks calories, weight trends, and daily habits in one place. Nothing 
 - USDA FoodData Central API for nutritional data
 
 **Frontend**
-- Vanilla HTML, CSS, JavaScript....no frameworks
+- Vanilla HTML, CSS, JavaScript — no frameworks
 - Canvas API for weight charts
 - PWA-ready
 
-**Deployment**
+**Infrastructure**
+- Docker (containerized backend)
 - Backend → Render
 - Frontend → Netlify
 - Database → Render PostgreSQL
+
+---
+
+## Performance
+
+- Added a B-tree index on `calories.user_id` and a composite index on `(user_id, logged_at)` after profiling queries with `EXPLAIN ANALYZE`.
+- On a seeded 50,000-row dataset, a per-user time-range query dropped from a **~170 ms sequential scan to a sub-millisecond index scan**.
+- Verified the planner's behavior directly: it correctly uses the index for selective queries and falls back to a sequential scan when a query returns most of the table — confirming indexes are only worthwhile when query selectivity is high.
+
+---
+
+## Docker
+
+The backend is fully containerized.
+
+```bash
+# Build the image (from the back/ directory)
+docker build -t pulselog .
+
+# Run, passing secrets at runtime (never baked into the image)
+docker run -p 8000:8000 --env-file .env pulselog
+```
+
+Secrets are kept out of the image via `.dockerignore`. Database migrations are run as a separate, deliberate step (`alembic upgrade head`) rather than on application startup, to avoid lock contention against the shared database.
 
 ---
 
@@ -47,7 +72,7 @@ PulseLog tracks calories, weight trends, and daily habits in one place. Nothing 
 ```
 Browser (Netlify CDN)
         ↓  fetch() with JWT Bearer token
-Render Server — uvicorn + FastAPI
+Render Server — uvicorn + FastAPI (Docker container)
         ↓
 SQLAlchemy ORM
         ↓
@@ -81,7 +106,8 @@ USDA FoodData Central API
 
 **Prerequisites**
 - Python 3.10+
-- PostgreSQL (or use SQLite for local testing)
+- PostgreSQL (or SQLite for local testing)
+- Docker (optional, for containerized run)
 
 **Setup**
 
@@ -93,8 +119,7 @@ cd pulse_log
 # Install dependencies
 pip install -r requirements.txt
 
-# Set up environment variables
-# Create back/.env with:
+# Set up environment variables — create back/.env with:
 # SECRET_KEY=your_secret_key
 # USDA_API_KEY=your_usda_key
 # DATABASE_URL=your_postgresql_url
@@ -123,6 +148,7 @@ pulse_log/
 │   ├── auth.py          # JWT authentication logic
 │   ├── database.py      # Database connection setup
 │   ├── migrations/      # Alembic migration files
+│   ├── Dockerfile       # Container definition
 │   └── .env             # Environment variables (not committed)
 ├── front/
 │   ├── index.html       # Home dashboard
@@ -148,4 +174,4 @@ pulse_log/
 
 ## Author
 
-[Gunavardhan](https://github.com/gunavardhanra-dev) — 3rd year engineering student, started coding 3 months ago, building toward backend development and a Masters in Germany. This is project 1.
+[Gunavardhan](https://github.com/gunavardhanra-dev) — 3rd year engineering student, started coding 3 months ago, building toward backend development and a Master's in Germany. This is Project 1.
