@@ -1,6 +1,6 @@
 from logging.config import fileConfig
-from back.database import Base
-from back import models #when you import models python runs models.py which registers
+from database import Base
+import models #when you import models python runs models.py which registers
 #all your model classes with base now base.metadata contains full picture of your schema
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool

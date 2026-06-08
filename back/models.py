@@ -1,6 +1,6 @@
 from sqlalchemy import Index,ForeignKey, Integer, String, Text,Float, func
 from sqlalchemy.orm import Mapped,mapped_column, relationship
-from back.database import Base
+from database import Base
 from datetime import datetime, timezone
 #models sql alc and also import from BASE
 

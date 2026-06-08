@@ -6,8 +6,8 @@ from dotenv import load_dotenv#this is required for hiding the things which need
 import os
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from back.database import get_db
-import back.models as models
+from database import get_db
+import models as models
 from fastapi import Depends,HTTPException, status#depends for dependecny injection 
 from fastapi.security import OAuth2PasswordBearer#looks for incoming requests finds the authorization header
 #and extracts the token from it ypu point it at your url login 

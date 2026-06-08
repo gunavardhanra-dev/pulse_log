@@ -11,24 +11,24 @@ from contextlib import asynccontextmanager
 
 import os
 import requests
-import back.models as models
-from back.schemas import Userbase,UserCreate,UserResponse,UserLogin, Token, Weightcreate, Weightresponse,calorie_response,calorie_intake,habit_create,habit_response,habit_log_response,habit_log_create
-from back.database import Base,get_db, engine
+import models as models
+from schemas import Userbase,UserCreate,UserResponse,UserLogin, Token, Weightcreate, Weightresponse,calorie_response,calorie_intake,habit_create,habit_response,habit_log_response,habit_log_create
+from database import Base,get_db, engine
 from sqlalchemy.orm import Session
 from  sqlalchemy import select
-from back.auth import create_access_token, get_currentr_user
+from auth import create_access_token, get_currentr_user
 load_dotenv()
 
 
 def run_migration():
-    alembic_cfg =Config("back/alembic.ini")
+    alembic_cfg =Config("alembic.ini")
     command.upgrade(alembic_cfg,"head")
     #Applying migrations — this is what run_migrations() 
     #in main.py does every time the app starts
     #It just runs whatever migration files exist that haven't been applied yet.
 @asynccontextmanager
 async def lifespan_hook(app:FastAPI):
-    run_migration()
+    #run_migration()
     yield 
 app= FastAPI(lifespan=lifespan_hook)
 
@@ -55,10 +55,6 @@ pwd_context= CryptContext(schemes=["bcrypt"],deprecated="auto")
 #cryptcontext is thr tool from passlib that handles password hashing
 #schemes line is the industry standard used for password hashing
 #deprecated line is the thing used to make sure if we ever switch algos  handles # schemes
-def run_migration():
-    alembic_cfg = Config("back/alembic.ini")
-    command.upgrade(alembic_cfg, "head")
-
 @app.post("/registration", response_model= UserResponse)
 def user_registration (user:UserCreate, db:Annotated[Session,Depends(get_db)]):
     result = db.execute(
